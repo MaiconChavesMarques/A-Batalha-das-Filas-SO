@@ -1,0 +1,57 @@
+﻿<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="JogoDaCatracaMaui.MainPage"
+             Title="Catraca Game">
+    <ScrollView Padding="20">
+        <StackLayout Spacing="10">
+            <!-- Regras -->
+            <Label Text="Bem-vindo ao jogo da catraca!" FontSize="24" HorizontalOptions="Center"/>
+
+            <VerticalStackLayout Padding="10">
+                <Border BackgroundColor="LightBlue"
+                        StrokeThickness="0"
+                        StrokeShape="RoundRectangle 10"
+                        Padding="10"
+                        Margin="10">
+                    <Label Text="REGRAS DO JOGO:. &#x0a;
+                                 Digite a senha que aparecer o mais rápido possível. &#x0a;
+                                 Você representa a turma B e está disputando contra a turma A. &#x0a;
+                                 Tente digitar corretamente antes que a turma A chegue no objetivo."
+                           TextColor="Black"
+                           FontSize="14"
+                           LineBreakMode="WordWrap" />
+                </Border>
+            </VerticalStackLayout>
+
+            <!-- Iniciar Jogo (Botão) -->
+            <Button x:Name="StartGameButton" 
+                    Text="Iniciar Jogo" 
+                    Clicked="OnStartGame" 
+                    BackgroundColor="Green" 
+                    TextColor="White" 
+                    FontSize="18"
+                    IsVisible="True"/>
+
+            <!-- Interface do jogo -->
+            <ScrollView x:Name="GameInterface" IsVisible="False">
+                <StackLayout Spacing="10">
+                    <Label Text="Digite a senha:" FontSize="18"/>
+                    <Entry x:Name="SenhaInput" Placeholder="Senha gerada..." IsReadOnly="True"/>
+                    <Entry x:Name="UserInput" Placeholder="Digite aqui..." Keyboard="Text" Completed="OnSubmit"/>
+                    <Button Text="Enviar" Clicked="OnSubmit"/>
+
+                    <Label Text="Progresso Turma A:" FontSize="18"/>
+                    <ProgressBar x:Name="TurmaAProgressBar" Progress="1" HeightRequest="20" />
+
+                    <Label Text="Progresso Turma B:" FontSize="18"/>
+                    <ProgressBar x:Name="TurmaBProgressBar" Progress="1" HeightRequest="20" />
+
+                    <Label x:Name="FeedbackLabel" Text="" TextColor="Blue" FontSize="16"/>
+                    <Label x:Name="GameStatusLabel" Text="" TextColor="Red" FontSize="16"/>
+
+                    <Button Text="Reiniciar Jogo" Clicked="OnRestart" BackgroundColor="Red" TextColor="White"/>
+                </StackLayout>
+            </ScrollView>
+        </StackLayout>
+    </ScrollView>
+</ContentPage>
