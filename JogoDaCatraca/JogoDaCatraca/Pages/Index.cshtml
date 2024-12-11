@@ -1,0 +1,171 @@
+﻿@page
+@model JogoDaCatraca.Pages.IndexModel
+@{
+    ViewData["Title"] = "Catraca Game";
+}
+
+<div class="container py-4">
+    @Html.AntiForgeryToken()
+
+    <!-- Game Title -->
+    <h1 class="text-center mb-4">Bem-vindo ao jogo da catraca!</h1>
+
+    <!-- Rules Section -->
+    <div class="bg-info bg-opacity-10 rounded p-4 mb-4">
+        <h4>REGRAS DO JOGO:</h4>
+        <ul class="mb-0">
+            <li>Digite a senha que aparecer o mais rápido possível.</li>
+            <li>Você representa a turma B e está disputando contra a turma A.</li>
+            <li>Tente digitar corretamente antes que a turma A chegue no objetivo.</li>
+        </ul>
+    </div>
+
+    <!-- Start Game Button -->
+    <div class="text-center mb-4">
+        <button id="startGameButton" class="btn btn-success btn-lg">Iniciar Jogo</button>
+    </div>
+
+    <!-- Game Interface -->
+    <div id="gameInterface" class="d-none">
+        <div class="mb-4">
+            <label class="form-label h5">Digite a senha:</label>
+            <input type="text" id="senhaInput" class="form-control mb-2" readonly />
+            <input type="text" id="userInput" class="form-control mb-2" placeholder="Digite aqui..." />
+            <button id="submitButton" class="btn btn-primary">Enviar</button>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Progresso Turma A:</label>
+            <div class="progress mb-3" style="height: 20px;">
+                <div id="turmaAProgress" class="progress-bar" role="progressbar" style="width: 100%"></div>
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Progresso Turma B:</label>
+            <div class="progress mb-3" style="height: 20px;">
+                <div id="turmaBProgress" class="progress-bar" role="progressbar" style="width: 100%"></div>
+            </div>
+        </div>
+
+        <div id="feedbackLabel" class="alert alert-info d-none"></div>
+        <div id="gameStatusLabel" class="alert alert-danger d-none"></div>
+
+        <button id="restartButton" class="btn btn-danger">Reiniciar Jogo</button>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let stopwatch;
+        let startTime;
+
+        document.getElementById('startGameButton').addEventListener('click', function () {
+            this.classList.add('d-none');
+            document.getElementById('gameInterface').classList.remove('d-none');
+            generateSenha();
+        });
+
+        document.getElementById('submitButton').addEventListener('click', onSubmit);
+        document.getElementById('restartButton').addEventListener('click', onRestart);
+        document.getElementById('userInput').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') onSubmit();
+        });
+
+        function generateSenha() {
+            const chars = 'abcdefghijklmnopqrstuvwxyz';
+            const senha = Array(8).fill().map(() => chars[Math.floor(Math.random() * chars.length)]).join('');
+            document.getElementById('senhaInput').value = senha;
+            document.getElementById('userInput').value = '';
+            document.getElementById('userInput').focus();
+            startTime = new Date();
+        }
+
+        async function onSubmit() {
+            try {
+                const endTime = new Date();
+                const elapsed = (endTime - startTime) / 1000;
+                const input = document.getElementById('userInput').value;
+                const senha = document.getElementById('senhaInput').value;
+
+                const response = await fetch('?handler=Submit', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({
+                        userInput: input,
+                        senha: senha,
+                        elapsedTime: elapsed
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    updateUI(data);
+                    if (!data.gameEnded) {
+                        generateSenha();
+                    }
+                } else {
+                    alert(data.error || 'An error occurred during submission.');
+                }
+            } catch (error) {
+                console.error('Error during submission:', error);
+                alert('An error occurred during submission. Please try again.');
+            }
+        }
+
+        async function onRestart() {
+            try {
+                const response = await fetch('?handler=Restart', {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    resetUI();
+                    generateSenha();
+                } else {
+                    alert(data.error || 'An error occurred while restarting the game.');
+                }
+            } catch (error) {
+                console.error('Error during restart:', error);
+                alert('An error occurred while restarting the game. Please try again.');
+            }
+        }
+
+        function updateUI(data) {
+            const feedbackLabel = document.getElementById('feedbackLabel');
+            const gameStatusLabel = document.getElementById('gameStatusLabel');
+
+            feedbackLabel.textContent = data.feedback;
+            feedbackLabel.classList.remove('d-none');
+
+            document.getElementById('turmaAProgress').style.width = `${data.turmaAProgress * 100}%`;
+            document.getElementById('turmaBProgress').style.width = `${data.turmaBProgress * 100}%`;
+
+            if (data.gameEnded) {
+                gameStatusLabel.textContent = data.gameStatus;
+                gameStatusLabel.classList.remove('d-none');
+                document.getElementById('userInput').disabled = true;
+                document.getElementById('submitButton').disabled = true;
+            }
+        }
+
+        function resetUI() {
+            document.getElementById('turmaAProgress').style.width = '100%';
+            document.getElementById('turmaBProgress').style.width = '100%';
+            document.getElementById('feedbackLabel').classList.add('d-none');
+            document.getElementById('gameStatusLabel').classList.add('d-none');
+            document.getElementById('userInput').value = '';
+            document.getElementById('userInput').disabled = false;
+            document.getElementById('submitButton').disabled = false;
+        }
+    </script>
+}
