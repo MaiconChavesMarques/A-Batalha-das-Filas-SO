@@ -1,5 +1,5 @@
 # A-Batalha-das-Filas-SO
-Jogo com o uso de threads e semáforos
+Jogo com o uso de threads e semáforos implementado em C#.
 
 ## UI do jogo
 A UI do jogo foi feita com .NET Sdk Web. O arquivo relevante ao projeto está presente em "JogoDaCatraca/JogoDaCatraca/Pages/Index.cshtml.cs". Para compilar e rodar a aplicação na sua máquina, realize os seguintes passos:
